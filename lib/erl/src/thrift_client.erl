@@ -97,6 +97,14 @@ start(ProtocolFactory, Service, ClientOpts)
 		start
 	end,
 
+    Opts =
+	case lists:keysearch(monitor, 1, ClientOpts) of
+	    {value, {monitor, tether}} ->
+		[{tether, self()}];
+	    _ ->
+		[]
+	end,
+
     Connect =
 	case lists:keysearch(connect, 1, ClientOpts) of
 	    {value, {connect, Choice}} ->
@@ -107,7 +115,7 @@ start(ProtocolFactory, Service, ClientOpts)
 	end,
 
 
-    Started = gen_server:Starter(?MODULE, [Service], []),
+    Started = gen_server:Starter(?MODULE, [Service, Opts], []),
 
     if
 	Connect ->
@@ -159,7 +167,13 @@ close(Client) when is_pid(Client) ->
 %%                         {stop, Reason}
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
-init([Service]) ->
+init([Service, Opts]) ->
+    case lists:keysearch(tether, 1, Opts) of
+	{value, {tether, Pid}} ->
+	    erlang:monitor(process, Pid);
+	_Else ->
+	    ok
+    end,
     {ok, #state{service = Service}}.
 
 %%--------------------------------------------------------------------
@@ -250,6 +264,10 @@ handle_cast(_Msg, State) ->
 %%                                       {stop, Reason, State}
 %% Description: Handling all non call/cast messages
 %%--------------------------------------------------------------------
+handle_info({'DOWN', _MonitorRef, process, _Pid, _Info}, State) ->
+    %% We don't actually verify the nature of the DOWN message.
+    {stop, parent_died, State};
+
 handle_info(_Info, State) ->
     {noreply, State}.
 
