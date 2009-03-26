@@ -52,6 +52,8 @@
 /lib/py/Makefile
 /lib/py/Makefile.in
 /lib/py/build
+/lib/py/dist
+/lib/py/Thrift.egg-info
 /lib/rb/Makefile
 /lib/rb/Makefile.in
 /libtool
