@@ -6,7 +6,10 @@
 # See accompanying file LICENSE or visit the Thrift site at:
 # http://developers.facebook.com/thrift/
 
-from distutils.core import setup, Extension
+try:
+  from setuptools import setup, Extension
+except:
+  from distutils.core import setup, Extension
 
 fastbinarymod = Extension('thrift.protocol.fastbinary',
                           sources = ['src/protocol/fastbinary.c'],
